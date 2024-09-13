@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atomic Technologies</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .dashboard {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+        .team {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 10px;
+            padding: 20px;
+            width: calc(50% - 20px);
+        }
+        .team h2 {
+            color: #0066cc;
+            margin-top: 0;
+        }
+        .task {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .task button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .task.completed {
+            text-decoration: line-through;
+            color: #888;
+        }
+        .task.completed button {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .progress {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        #loginForm {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 300px;
+            text-align: center;
+        }
+        #loginForm input, #loginForm select, #loginForm button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        #loginForm button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #logoutButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Atomic Technologies</h1>
+    <div id="loginContainer">
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <select id="role">
+                <option value="employee">Employee</option>
+                <option value="admin">Admin</option>
+            </select>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+    <div id="dashboardContainer" style="display: none;">
+        <button id="logoutButton">Logout</button>
+        <div class="dashboard" id="dashboard"></div>
+    </div>
+
+    <script>
+        const teams = [
+            {
+                name: "Development Team",
+                tasks: [
+                    "Implement new feature",
+                    "Fix critical bug",
+                    "Refactor legacy code",
+                    "Write unit tests"
+                ]
+            },
+            {
+                name: "Design Team",
+                tasks: [
+                    "Create new logo",
+                    "Design user interface",
+                    "Develop brand guidelines",
+                    "Prototype new app"
+                ]
+            },
+            {
+                name: "Marketing Team",
+                tasks: [
+                    "Launch social media campaign",
+                    "Analyze market trends",
+                    "Create content calendar",
+                    "Prepare press release"
+                ]
+            },
+            {
+                name: "Operations Team",
+                tasks: [
+                    "Optimize supply chain",
+                    "Conduct team training",
+                    "Update company policies",
+                    "Improve customer support process"
+                ]
+            }
+        ];
+
+        let currentUser = null;
+
+        function renderDashboard() {
+            const dashboard = document.getElementById('dashboard');
+            dashboard.innerHTML = '';
+
+            teams.forEach(team => {
+                const teamElement = document.createElement('div');
+                teamElement.className = 'team';
+                teamElement.innerHTML = `
+                    <h2>${team.name}</h2>
+                    ${team.tasks.map((task, index) => `
+                        <div class="task" id="task-${team.name}-${index}">
+                            <span>${task}</span>
+                            <button onclick="toggleTask('${team.name}', ${index})" ${currentUser.role !== 'admin' ? 'disabled' : ''}>Complete</button>
+                        </div>
+                    `).join('')}
+                    <div class="progress" id="progress-${team.name}"></div>
+                `;
+                dashboard.appendChild(teamElement);
+            });
+
+            updateProgress();
+        }
+
+        function toggleTask(teamName, taskIndex) {
+            if (currentUser.role === 'admin') {
+                const taskElement = document.getElementById(`task-${teamName}-${taskIndex}`);
+                taskElement.classList.toggle('completed');
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            teams.forEach(team => {
+                const progressElement = document.getElementById(`progress-${team.name}`);
+                const tasks = document.querySelectorAll(`[id^="task-${team.name}"]`);
+                const completedTasks = document.querySelectorAll(`[id^="task-${team.name}"].completed`);
+                progressElement.textContent = `Progress: ${completedTasks.length}/${tasks.length} tasks completed`;
+            });
+        }
+
+        function login(username, password, role) {
+            // In a real application, you would validate credentials against a backend
+            // For this example, we'll just check if the fields are not empty
+            if (username && password) {
+                currentUser = { username, role };
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('dashboardContainer').style.display = 'block';
+                renderDashboard();
+            } else {
+                alert('Invalid credentials');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginContainer').style.display = 'block';
+            document.getElementById('dashboardContainer').style.display = 'none';
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+            login(username, password, role);
+        });
+
+        document.getElementById('logoutButton').addEventListener('click', logout);
+    </script>
+</body>
+</html>
